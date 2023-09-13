@@ -1,9 +1,9 @@
 name: Endor Labs Scan
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ dev ]
   workflow_dispatch:
 jobs:
   endorlabs-scan:
@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Setup Go
-        uses: actions/setup-go@v3
-      - name: Build 
-        run: go build
-      - name: Endor Labs Scan Push
+      - name: Setup DotNet
+        uses: actions/setup-dotnet@v3
+      - name: Create lockfile
+        run: dotnet restore --use-lock-file ./src
+      - name: Endor Labs Watch
         if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         uses: endorlabs/github-action@main
         with:
@@ -29,7 +29,7 @@ jobs:
           enable_github_action_token: "true"
           sarif_file: endorlabs.sarif
           additional_args: "--enable=git,analytics,secrets"
-      - name: Endor Labs Scan Push
+      - name: Endor Labs Scan PR to Default Branch
         if: github.event_name == 'pull_request'
         uses: endorlabs/github-action@main
         with:
@@ -38,7 +38,7 @@ jobs:
           ci_run: "true"
           enable_github_action_token: "true"
           sarif_file: endorlabs.sarif
-          additional_args: "--enable=git,analytics,secrets --ci-baseline=main"
+          additional_args: "--enable=git,analytics,secrets --ci-baseline=dev"
      # Use for to upload findings to GitHub.
      # - name: Upload SARIF to github
      #   if: github.event_name == 'push'
