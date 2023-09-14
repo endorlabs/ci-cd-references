@@ -1,0 +1,78 @@
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+#
+stages:
+  - Scan
+variables:
+   # Endor Labs Configuration
+   #
+   ENDORCTL_VERSION: "latest" # Set to latest to download the latest version automatically otherwise, use a specific version of endorctl
+   ENDOR_NAMESPACE: "demo" # Insert your Endor Labs namespace here
+   DEBUG: "false"  ## Set DEBUG to "true" to send logs to Endor Labs support
+   ## If you would like to pin a specific version of endorctl to this job, you can implement an integrity check of the binary using the below variable.
+   # ENDORCTL_SHA: "Insert SHA256 hash for an integrity check here"
+   #
+   ## Scan scoping section
+   #
+   ## Use the following environment variables for custom paths, inclusions and exclusions.
+   # ENDOR_SCAN_PATH: "Insert a custom path to your git repository. Defaults to your pwd"
+   # ENDOR_SCAN_EXCLUDE: "Insert a regexp style pattern of paths to exclude in the scan. Generally used for monorepos."
+   # ENDORCTL_SCAN_INCLUDE: "Insert a regexp style pattern of paths to include in the scan. Generally used for monorepos."
+   #
+   ## Authentication to Endor Labs
+   #
+   ## Use the following environment variables for keyless authentication with your cloud provider. For more information visit: https://docs.api.endorlabs.com/continuous-integration/keyless-authentication/
+   #
+   # ENDOR_GCP_CREDENTIALS_SERVICE_ACCOUNT: "endorlabs@<yourproject.iam.gserviceaccount.com" 
+   # ENDOR_AWS_CREDENTIALS_ROLE_ARN: "arn:aws:iam::123456789012:role/my-role"
+   #
+   ## Follow the below instructions to use an API key and secret instead of keyless authentication.
+   ## In your GitLab environment, select the project you want to scan.
+   ## Go to `Settings` > `CI/CD`.
+   ## Click `Expand` in the `Variables` section.
+   ## Click the `Add variable` button at the bottom of the section. 
+   ## In the `Key` field, enter ENDOR_API_CREDENTIALS_SECRET.
+   ## In the `Value` field, enter your Endor Labs API secret.
+   ## Under `Flags` make sure you select `Mask variable`.
+   ## Repeat to add your API key as the variable ENDOR_API_CREDENTIALS_KEY
+   #
+Endor Labs Dependency Scan:
+  stage: Scan
+  image: maven:3.6.3-jdk-11 # Modify this image to align with the build tools nessesary to build your software packages
+  before_script:
+    # Install jq to download endorctl
+    - apt-get update && apt-get install -y jq
+    # Download and integrity check the endorctl binary
+    - if [ "$ENDORCTL_VERSION" == "latest" ]; then
+        echo "Downloading latest version of endorctl";
+        ENDORCTL_SHA=$(curl https://api.endorlabs.com/meta/version | jq -r '.ClientChecksums.ARCH_TYPE_LINUX_AMD64');
+        VERSION=$(curl https://api.endorlabs.com/meta/version | jq -r '.Service.Version');
+        curl https://storage.googleapis.com/endorlabs/"$VERSION"/binaries/endorctl_"$VERSION"_linux_amd64 -o endorctl;
+        echo "$ENDORCTL_SHA  endorctl" | sha256sum -c;
+        if [ $? -ne 0 ]; then 
+          echo "Integrity check failed"; 
+          exit 1;
+        fi
+      else
+        echo Downloading version "$ENDORCTL_VERSION" of endorctl;
+        curl https://storage.googleapis.com/endorlabs/"$ENDORCTL_VERSION"/binaries/endorctl_"$ENDORCTL_VERSION"_linux_amd64 -o endorctl;
+        echo "$ENDORCTL_SHA  endorctl" | sha256sum -c;
+        if [ $? -ne 0 ]; then 
+          echo "Integrity check failed for the pinned version of endorctl. Please ensure the environment variable is set and re-run the job"; 
+          exit 1;
+        fi
+      fi
+    - chmod +x ./endorctl
+    - mvn clean install # Replace with your packages build steps. 
+  script:
+    - if [ "$DEBUG" == "true" ]; then
+        export ENDOR_LOG_VERBOSE=true;
+        export ENDOR_LOG_LEVEL=debug;
+      fi
+    - if [ "$CI_COMMIT_REF_NAME" == "$CI_DEFAULT_BRANCH" ]; then
+        export ENDOR_AS_DEFAULT_BRANCH=true;
+        export ENDOR_SCAN_DETACHED_REF_NAME="$CI_COMMIT_REF_NAME";
+      else
+        export ENDOR_CI_RUN=true;
+      fi
+    - ./endorctl scan
