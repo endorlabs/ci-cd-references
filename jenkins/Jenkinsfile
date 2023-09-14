@@ -1,0 +1,41 @@
+pipeline {
+	agent any
+
+	environment {
+		// Replace with your namespace and credential name
+		ENDOR_NAMESPACE = "jenkins-demo"
+		ENDOR_API_CREDS = credentials('endorlabs-global-scan')
+		// Move generated ENV details into endorctl config vars
+		ENDOR_API_CREDENTIALS_KEY = "$ENDOR_API_CREDS_USR"
+		ENDOR_API_CREDENTIALS_SECRET = "$ENDOR_API_CREDS_PSW"
+	}
+
+	stages {
+		stage ('OWASPJavaBenchmark - Checkout') {
+			steps {
+				checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/OWASP-Benchmark/BenchmarkJava.git']]]) 
+			}
+		}
+
+		stage ('OWASPJavaBenchmark - Build') {
+			steps {
+				// Build the package
+				sh """ 
+				mvn clean package 
+				"""
+			}
+		}
+	
+		stage ('OWASPJavaBenchmark - ci_run Scan') {
+			steps {
+				// Endor Labs Scan
+				sh """ 
+				./endorctl scan --show-progress=false -o json --ci-run=true | tee ./endorlabs-results.json 
+				"""
+
+				// Archive the scan results
+				archiveArtifacts allowEmptyArchive: false, artifacts: 'endorlabs-results.json', caseSensitive: true, defaultExcludes: true, fingerprint: true, onlyIfSuccessful: false 
+			}
+		}
+	}
+}
