@@ -1,0 +1,62 @@
+.shared_windows_runners:
+  tags:
+    - shared-windows
+    - windows-1809
+
+stages:
+  - test
+
+endorctl_setup:
+  extends:
+    - .shared_windows_runners
+  script:
+    - Write-Host "Downloading latest version of endorctl"
+    - $response = Invoke-RestMethod -Uri "https://api.endorlabs.com/meta/version" -Method Get
+    - $version = $response.Service.Version
+    - $ENDORCTL_DOWNLOAD_URL = "https://storage.googleapis.com/endorlabs/${version}/binaries/endorctl_${version}_windows_amd64.exe"
+    - $ENDORCTL_FILENAME = "endorctl.exe"
+    - Invoke-WebRequest -Uri $ENDORCTL_DOWNLOAD_URL -OutFile $ENDORCTL_FILENAME
+    - .\endorctl.exe --version
+  artifacts:
+    paths:
+      - endorctl.exe  # Specify endorctl.exe as an artifact that can be used across jobs.
+
+endorlabstest:
+  extends:
+    - .shared_windows_runners
+  stage: test
+  script:
+    - dotnet restore
+    - dotnet build
+    - echo "Running a PR test with Endor Labs."
+    - .\endorctl.exe scan --call-graph-languages="c#"
+  variables:
+    ENDOR_AS_DEFAULT_BRANCH: "true"
+    ENDOR_SCAN_DETACHED_REF_NAME: "$CI_COMMIT_REF_NAME"
+    ENDOR_NAMESPACE: "example" # Insert your namespace here.
+    ENDOR_CI_RUN: "true"
+    ENDOR_API: "https://api.endorlabs.com"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  needs:
+    - endorctl_setup  # This ensures endorctl_setup runs before endorlabstest
+
+endorlabsmonitor:
+  extends:
+    - .shared_windows_runners
+  stage: test
+  script:
+    - dotnet restore
+    - dotnet build
+    - echo "Running Endor Labs Scan"
+    - .\endorctl.exe scan --call-graph-languages="c#"
+  variables:
+    ENDOR_AS_DEFAULT_BRANCH: "true"
+    ENDOR_SCAN_DETACHED_REF_NAME: "$CI_COMMIT_REF_NAME"
+    ENDOR_NAMESPACE: "yolo" #Insert your namespace here
+    ENDOR_API: "https://api.endorlabs.com"
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == $DEFAULT_BRANCH'
+    - if: $CI_PIPELINE_SOURCE == "push"
+  needs:
+    - endorctl_setup  # This ensures endorctl_setup runs before endorlabsmonitor
