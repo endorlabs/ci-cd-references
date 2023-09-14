@@ -1,0 +1,22 @@
+name: Endor Labs Example
+on: push
+jobs:
+  build-and-scan:
+    permissions:
+      id-token: write   # Write permission is required to request a JWT token to perform keyless authentication
+      contents: read  # Required by actions/checkout@v3 to checkout a private repository.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Compile Package
+        run: mvn clean install
+      - name: Scan with Endor Labs
+        uses: endorlabs/github-action@main
+        with:
+          namespace: "example" # Update with your Endor Labs namespace  
