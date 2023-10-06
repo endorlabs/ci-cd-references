@@ -49,7 +49,7 @@ endorlabsmonitor:
     - dotnet restore
     - dotnet build
     - echo "Running Endor Labs Scan"
-    - .\endorctl.exe scan --call-graph-languages="c#"
+    - .\endorctl.exe scan
   variables:
     ENDOR_AS_DEFAULT_BRANCH: "true"
     ENDOR_SCAN_DETACHED_REF_NAME: "$CI_COMMIT_REF_NAME"
