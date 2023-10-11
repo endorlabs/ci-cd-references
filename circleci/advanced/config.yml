@@ -66,7 +66,7 @@ jobs:
       - run:
           name: "Endor Labs Test"
           command: |
-            ./endorctl scan --ci-run --ci-baseline=main --enable=git,secrets,analytics
+            ./endorctl scan --pr --pr-baseline=main --dependencies --secrets
             
   watch-endorlabs-scan:
     docker:
@@ -109,7 +109,7 @@ jobs:
       - run:
           name: "Endor Labs Watch"
           command: |
-            ./endorctl scan --enable=git,secrets,analytics
+            ./endorctl scan --dependencies --secrets
 workflows:
   build_and_endorlabs_watch:
     when:
