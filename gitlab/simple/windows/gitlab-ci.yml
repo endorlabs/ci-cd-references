@@ -29,13 +29,12 @@ endorlabstest:
     - dotnet restore
     - dotnet build
     - echo "Running a PR test with Endor Labs."
-    - .\endorctl.exe scan --call-graph-languages="c#"
+    - .\endorctl.exe scan
   variables:
     ENDOR_AS_DEFAULT_BRANCH: "true"
     ENDOR_SCAN_DETACHED_REF_NAME: "$CI_COMMIT_REF_NAME"
     ENDOR_NAMESPACE: "example" # Insert your namespace here.
-    ENDOR_CI_RUN: "true"
-    ENDOR_API: "https://api.endorlabs.com"
+    ENDOR_SCAN_PR: "true"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   needs:
@@ -53,8 +52,7 @@ endorlabsmonitor:
   variables:
     ENDOR_AS_DEFAULT_BRANCH: "true"
     ENDOR_SCAN_DETACHED_REF_NAME: "$CI_COMMIT_REF_NAME"
-    ENDOR_NAMESPACE: "yolo" #Insert your namespace here
-    ENDOR_API: "https://api.endorlabs.com"
+    ENDOR_NAMESPACE: "example" #Insert your namespace here
   rules:
     - if: '$CI_COMMIT_REF_NAME == $DEFAULT_BRANCH'
     - if: $CI_PIPELINE_SOURCE == "push"
