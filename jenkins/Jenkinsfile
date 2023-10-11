@@ -30,7 +30,7 @@ pipeline {
 			steps {
 				// Endor Labs Scan
 				sh """ 
-				./endorctl scan --show-progress=false -o json --ci-run=true | tee ./endorlabs-results.json 
+				./endorctl scan -o json --pr | tee ./endorlabs-results.json 
 				"""
 
 				// Archive the scan results
