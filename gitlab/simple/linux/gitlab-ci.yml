@@ -73,6 +73,6 @@ Endor Labs Dependency Scan:
         export ENDOR_AS_DEFAULT_BRANCH=true;
         export ENDOR_SCAN_DETACHED_REF_NAME="$CI_COMMIT_REF_NAME";
       else
-        export ENDOR_CI_RUN=true;
+        export ENDOR_SCAN_PR=true;
       fi
-    - ./endorctl scan
+    - ./endorctl scan --dependencies --secrets
