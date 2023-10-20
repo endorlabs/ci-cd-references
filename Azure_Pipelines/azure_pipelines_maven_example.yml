@@ -1,0 +1,35 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: Maven@3
+  inputs:
+    mavenPomFile: 'pom.xml'
+    mavenOptions: '-DskipTests'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.17'
+    jdkArchitectureOption: 'x64'
+
+- script: |
+    curl https://api.endorlabs.com/download/endorlabs/v1.6.8/binaries/endorctl_v1.6.8_linux_amd64 -o endorctl
+  displayName: 'Download the CLI for your selected architecture'
+    
+- script: |
+    echo "86504fa0ae3374acf93f334e4102ac2aa5b1c640eda2f714a4d6597193908e94 endorctl" | sha256sum --check
+  displayName: 'Verify the checksum of the binary'
+    
+- script: |
+    chmod +x ./endorctl
+  displayName: 'Modify the permissions of the binary to ensure it is executable'
+    
+- script: |
+    ./endorctl scan --api-key $(ENDOR_API_CREDENTIALS_KEY) --api-secret $(ENDOR_API_CREDENTIALS_SECRET) -n YOUR_ENDOR_NAMESPACE
+  displayName: 'Run a scan against the repository using your API key & secret pair'
