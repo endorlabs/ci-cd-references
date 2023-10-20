@@ -18,6 +18,7 @@ steps:
     jdkVersionOption: '1.17'
     jdkArchitectureOption: 'x64'
 
+# Implement and scan with Endor Labs after your build is complete
 - script: |
     curl https://api.endorlabs.com/download/endorlabs/v1.6.8/binaries/endorctl_v1.6.8_linux_amd64 -o endorctl
   displayName: 'Download the CLI for your selected architecture'
