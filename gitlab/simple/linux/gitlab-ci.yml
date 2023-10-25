@@ -70,7 +70,7 @@ Endor Labs Dependency Scan:
         export ENDOR_LOG_LEVEL=debug;
       fi
     - if [ "$CI_COMMIT_REF_NAME" == "$CI_DEFAULT_BRANCH" ]; then
-        export ENDOR_AS_DEFAULT_BRANCH=true;
+        export ENDOR_SCAN_AS_DEFAULT_BRANCH=true;
         export ENDOR_SCAN_DETACHED_REF_NAME="$CI_COMMIT_REF_NAME";
       else
         export ENDOR_SCAN_PR=true;
