@@ -10,6 +10,7 @@ Endor Labs Dependency Scan:
   variables:
     ENDOR_ENABLED: "true"
     ENDOR_ALLOW_FAILURE: "true"
+    DEBUG: "false"
     ENDOR_NAMESPACE: "demo"
     ENDOR_PROJECT_DIR: "."
     GIT_DEPTH: 0
