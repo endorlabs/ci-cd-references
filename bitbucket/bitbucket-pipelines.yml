@@ -1,6 +1,4 @@
-
-
-image: maven:3.6.3-jdk-11
+simage: maven:3.6.3-jdk-11
 
 pipelines:
   branches:
