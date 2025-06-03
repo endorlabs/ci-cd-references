@@ -20,7 +20,7 @@ jobs:
             apt-get update && apt-get install -y jq
             if [ "$ENDORCTL_VERSION" == "latest" ]; then
               echo "Downloading latest version of endorctl"
-              VERSION=$(curl https://api.endorlabs.com/meta/version | jq -r '.Service.Version')
+              VERSION=$(curl https://api.endorlabs.com/meta/version | jq -r '.ClientVersion')
               ENDORCTL_SHA=$(curl https://api.endorlabs.com/meta/version | jq -r '.ClientChecksums.ARCH_TYPE_LINUX_AMD64')
               curl https://storage.googleapis.com/endorlabs/"$VERSION"/binaries/endorctl_"$VERSION"_linux_amd64 -o endorctl
               echo "$ENDORCTL_SHA  endorctl" | sha256sum -c
@@ -58,7 +58,7 @@ jobs:
             apt-get update && apt-get install -y jq
             if [ "$ENDORCTL_VERSION" == "latest" ]; then
               echo "Downloading latest version of endorctl"
-              VERSION=$(curl https://api.endorlabs.com/meta/version | jq -r '.Service.Version')
+              VERSION=$(curl https://api.endorlabs.com/meta/version | jq -r '.ClientVersion')
               ENDORCTL_SHA=$(curl https://api.endorlabs.com/meta/version | jq -r '.ClientChecksums.ARCH_TYPE_LINUX_AMD64')
               curl https://storage.googleapis.com/endorlabs/"$VERSION"/binaries/endorctl_"$VERSION"_linux_amd64 -o endorctl
               echo "$ENDORCTL_SHA  endorctl" | sha256sum -c

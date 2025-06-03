@@ -12,7 +12,7 @@ endorctl_setup:
   script:
     - Write-Host "Downloading latest version of endorctl"
     - $response = Invoke-RestMethod -Uri "https://api.endorlabs.com/meta/version" -Method Get
-    - $version = $response.Service.Version
+    - $version = $response.ClientVersion
     - $ENDORCTL_DOWNLOAD_URL = "https://storage.googleapis.com/endorlabs/${version}/binaries/endorctl_${version}_windows_amd64.exe"
     - $ENDORCTL_FILENAME = "endorctl.exe"
     - Invoke-WebRequest -Uri $ENDORCTL_DOWNLOAD_URL -OutFile $ENDORCTL_FILENAME
